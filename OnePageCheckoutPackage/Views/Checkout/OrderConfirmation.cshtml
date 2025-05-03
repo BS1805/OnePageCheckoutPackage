@@ -1,0 +1,36 @@
+﻿@{
+    ViewData["Title"] = "Order Confirmation";
+}
+
+<div class="container">
+    <div class="py-5 text-center">
+        <h2>Thank You for Your Order!</h2>
+        <div class="alert alert-success mt-4">
+            <p>Your order has been successfully placed.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4>Order Confirmation</h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Order #@TempData["OrderNumber"]</h5>
+                    <p>Thank you, <strong>@TempData["CustomerName"]</strong>!</p>
+                    <p>We've received your order and are getting it ready. A confirmation email has been sent to <strong>@TempData["CustomerEmail"]</strong>.</p>
+                    <p>Order Total: <strong>@TempData["OrderTotal"]</strong></p>
+
+                    <hr />
+
+                    <p>You will receive an email notification when your order has been shipped.</p>
+                    <p>If you have any questions about your order, please contact our customer support team.</p>
+                </div>
+                <div class="card-footer">
+                    <a href="/" class="btn btn-primary">Continue Shopping</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
