@@ -3,13 +3,12 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-
-    <!-- Enable nullable reference types globally -->
+    <OutputType>Exe</OutputType> <!-- Add this line -->
     <Nullable>enable</Nullable>
 
     <!-- Package Metadata -->
     <PackageId>OnePageCheckoutPackage</PackageId>
-    <Version>1.0.2</Version>
+    <Version>1.0.13</Version>
     <Authors>Your Name</Authors>
     <Company>Your Organization</Company>
     <Description>A comprehensive one-page checkout solution for ASP.NET Core Razor Pages applications</Description>
@@ -29,9 +28,9 @@
     <PackageReference Include="Telegram.Bot" Version="19.0.0" />
   </ItemGroup>
 
- <ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="Views\Checkout\Index.cshtml" />
     <EmbeddedResource Include="Views\Checkout\OrderConfirmation.cshtml" />
-</ItemGroup>
+  </ItemGroup>
 
 </Project>

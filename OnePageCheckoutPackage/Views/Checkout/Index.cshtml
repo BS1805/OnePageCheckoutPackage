@@ -3,221 +3,461 @@
     ViewData["Title"] = "Checkout";
 }
 
-<div class="container">
-    <div class="py-5 text-center">
-        <h2>Checkout</h2>
-        <p class="lead">Complete your purchase by filling out the form below.</p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold">Checkout</h1>
+        <p class="lead text-muted">Complete your purchase securely</p>
     </div>
 
-    <div class="row">
-        <div class="col-md-4 order-md-2 mb-4">
-            <h4 class="d-flex justify-content-between align-items-center mb-3">
-                <span class="text-muted">Your Cart</span>
-                <span class="badge bg-primary rounded-pill">@Model.CartItems.Sum(x => x.Quantity)</span>
-            </h4>
-            <ul class="list-group mb-3">
-                @foreach (var item in Model.CartItems)
-                {
-                    <li class="list-group-item d-flex justify-content-between lh-sm">
-                        <div>
-                            <h6 class="my-0">@item.ProductName</h6>
-                            <small class="text-muted">@(item.Color) - Qty: @item.Quantity</small>
+    <div class="row g-5">
+        <!-- Order Summary (Right Side) -->
+        <div class="col-md-4 order-md-2">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h4 class="d-flex justify-content-between align-items-center mb-0">
+                        <span>Your Cart</span>
+                        <span class="badge bg-primary rounded-pill">@Model.CartItems.Sum(x => x.Quantity)</span>
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush mb-3">
+                        @foreach (var item in Model.CartItems)
+                        {
+                            <li class="list-group-item px-0 d-flex justify-content-between lh-sm border-bottom">
+                                <div>
+                                    <h6 class="my-0">@item.ProductName</h6>
+                                    <small class="text-muted">@(item.Color) - Qty: @item.Quantity</small>
+                                </div>
+                                <span class="text-muted">@item.Total.ToString("C")</span>
+                            </li>
+                        }
+                    </ul>
+                    <div class="card-footer bg-white px-0 pt-2">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal</span>
+                            <span>@Model.Subtotal.ToString("C")</span>
                         </div>
-                        <span class="text-muted">@item.Total.ToString("C")</span>
-                    </li>
-                }
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>Subtotal</span>
-                    <strong>@Model.Subtotal.ToString("C")</strong>
-                </li>
-                @if (Model.Tax > 0)
-                {
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>Tax</span>
-                        <strong>@Model.Tax.ToString("C")</strong>
-                    </li>
-                }
-                @if (Model.ShippingCost > 0)
-                {
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>Shipping</span>
-                        <strong>@Model.ShippingCost.ToString("C")</strong>
-                    </li>
-                }
-                <li class="list-group-item d-flex justify-content-between bg-light">
-                    <span class="text-success">Total (USD)</span>
-                    <strong class="text-success">@Model.Total.ToString("C")</strong>
-                </li>
-            </ul>
+                        @if (Model.Tax > 0)
+                        {
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Tax</span>
+                                <span>@Model.Tax.ToString("C")</span>
+                            </div>
+                        }
+                        @if (Model.ShippingCost > 0)
+                        {
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Shipping</span>
+                                <span>@Model.ShippingCost.ToString("C")</span>
+                            </div>
+                        }
+                        <hr>
+                        <div class="d-flex justify-content-between fw-bold">
+                            <span>Total (USD)</span>
+                            <span class="text-primary">@Model.Total.ToString("C")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Order Security & Guarantees -->
+            <div class="card mt-4 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-shield-check"></i> Secure Checkout</h5>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><i class="bi bi-lock-fill text-success me-2"></i>256-bit SSL encryption</li>
+                        <li class="mb-2"><i class="bi bi-credit-card text-success me-2"></i>PCI DSS compliant</li>
+                        <li class="mb-2"><i class="bi bi-arrow-counterclockwise text-success me-2"></i>30-day returns</li>
+                        <li><i class="bi bi-patch-check text-success me-2"></i>Satisfaction guaranteed</li>
+                    </ul>
+                </div>
+            </div>
         </div>
+
+        <!-- Checkout Form (Left Side) -->
         <div class="col-md-8 order-md-1">
-            <h4 class="mb-3">Checkout Details</h4>
-            <form asp-action="PlaceOrder" method="post">
-                <div class="row g-3">
-                    <!-- Billing Section -->
-                    <div class="col-12">
-                        <h5>Billing Information</h5>
+            <form id="checkoutForm" asp-action="PlaceOrder" method="post" class="needs-validation" novalidate>
+                <!-- Hidden fields to persist totals -->
+                <input type="hidden" asp-for="Subtotal" />
+                <input type="hidden" asp-for="Tax" />
+                <input type="hidden" asp-for="ShippingCost" />
+                <input type="hidden" asp-for="Total" />
+
+
+                <!-- Cart Items -->
+                @for (int i = 0; i < Model.CartItems.Count; i++)
+                {
+                    <input type="hidden" asp-for="CartItems[@i].ProductName" />
+                    <input type="hidden" asp-for="CartItems[@i].Quantity" />
+                    <input type="hidden" asp-for="CartItems[@i].Price" />
+                    <input type="hidden" asp-for="CartItems[@i].Color" />
+                }
+                <!-- Progress Steps -->
+                <div class="checkout-progress mb-4">
+                    <div class="progress" style="height: 4px;">
+                        <div class="progress-bar" role="progressbar" id="checkoutProgressBar" style="width: 33%;" aria-valuenow="33" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
-
-                    <div class="col-md-6">
-                        <label asp-for="BillingDetails.FirstName" class="form-label">First name</label>
-                        <input type="text" class="form-control" asp-for="BillingDetails.FirstName" required>
-                        <span asp-validation-for="BillingDetails.FirstName" class="text-danger"></span>
+                    <div class="d-flex justify-content-between mt-2">
+                        <span class="step active" id="step1">Customer Info</span>
+                        <span class="step" id="step2">Shipping</span>
+                        <span class="step" id="step3">Payment</span>
                     </div>
+                </div>
 
-                    <div class="col-md-6">
-                        <label asp-for="BillingDetails.LastName" class="form-label">Last name</label>
-                        <input type="text" class="form-control" asp-for="BillingDetails.LastName" required>
-                        <span asp-validation-for="BillingDetails.LastName" class="text-danger"></span>
-                    </div>
-
-                    <div class="col-12">
-                        <label asp-for="BillingDetails.Email" class="form-label">Email</label>
-                        <input type="email" class="form-control" asp-for="BillingDetails.Email" required>
-                        <span asp-validation-for="BillingDetails.Email" class="text-danger"></span>
-                    </div>
-
-                    <div class="col-12">
-                        <label asp-for="BillingDetails.Phone" class="form-label">Phone</label>
-                        <input type="tel" class="form-control" asp-for="BillingDetails.Phone" required>
-                        <span asp-validation-for="BillingDetails.Phone" class="text-danger"></span>
-                    </div>
-
-                    <div class="col-12">
-                        <label asp-for="BillingDetails.Address" class="form-label">Address</label>
-                        <input type="text" class="form-control" asp-for="BillingDetails.Address" required>
-                        <span asp-validation-for="BillingDetails.Address" class="text-danger"></span>
-                    </div>
-
-                    <div class="col-md-5">
-                        <label asp-for="BillingDetails.Country" class="form-label">Country</label>
-                        <select class="form-select" asp-for="BillingDetails.Country" required>
-                            <option value="">Choose...</option>
-                            <option value="United States">United States</option>
-                            <option value="Canada">Canada</option>
-                            <option value="Mexico">Mexico</option>
-                            <option value="United Kingdom">United Kingdom</option>
-                            <option value="Australia">Australia</option>
-                            <option value="Germany">Germany</option>
-                            <option value="France">France</option>
-                            <option value="Japan">Japan</option>
-                            <option value="China">China</option>
-                            <option value="India">India</option>
-                        </select>
-                        <span asp-validation-for="BillingDetails.Country" class="text-danger"></span>
-                    </div>
-
-                    <div class="col-md-4">
-                        <label asp-for="BillingDetails.City" class="form-label">City</label>
-                        <input type="text" class="form-control" asp-for="BillingDetails.City" required>
-                        <span asp-validation-for="BillingDetails.City" class="text-danger"></span>
-                    </div>
-
-                    <div class="col-md-3">
-                        <label asp-for="BillingDetails.PostalCode" class="form-label">Postal Code</label>
-                        <input type="text" class="form-control" asp-for="BillingDetails.PostalCode" required>
-                        <span asp-validation-for="BillingDetails.PostalCode" class="text-danger"></span>
-                    </div>
-
-                    <!-- Shipping Section -->
-                    <div class="col-12 mt-4">
-                        <hr>
-                        <h5>Shipping Information</h5>
-
-                        <div class="form-check mb-3">
-                            <input type="checkbox" class="form-check-input" id="sameAsBilling" asp-for="SameAsShipping"
-                                   onchange="toggleShippingFields(this.checked)">
-                            <label class="form-check-label" for="sameAsBilling">Same as billing address</label>
+                <!-- Step 1: Customer Info -->
+                <div id="customerInfoSection" class="checkout-section active">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="bi bi-person-fill me-2"></i>Contact Information</h5>
                         </div>
-                    </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label asp-for="BillingDetails.FirstName" class="form-label">First name*</label>
+                                    <input type="text" class="form-control" asp-for="BillingDetails.FirstName" required>
+                                    <div class="invalid-feedback">
+                                        Please enter your first name.
+                                    </div>
+                                    <span asp-validation-for="BillingDetails.FirstName" class="text-danger"></span>
+                                </div>
 
-                    <div id="shippingFields" style="display: none;" class="col-12">
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <label asp-for="ShippingDetails.ShippingAddress" class="form-label">Address</label>
-                                <input type="text" class="form-control" asp-for="ShippingDetails.ShippingAddress">
-                                <span asp-validation-for="ShippingDetails.ShippingAddress" class="text-danger"></span>
-                            </div>
+                                <div class="col-md-6">
+                                    <label asp-for="BillingDetails.LastName" class="form-label">Last name*</label>
+                                    <input type="text" class="form-control" asp-for="BillingDetails.LastName" required>
+                                    <div class="invalid-feedback">
+                                        Please enter your last name.
+                                    </div>
+                                    <span asp-validation-for="BillingDetails.LastName" class="text-danger"></span>
+                                </div>
 
-                            <div class="col-md-5">
-                                <label asp-for="ShippingDetails.ShippingCountry" class="form-label">Country</label>
-                                <select class="form-select" asp-for="ShippingDetails.ShippingCountry">
-                                    <option value="">Choose...</option>
-                                    <option value="United States">United States</option>
-                                    <option value="Canada">Canada</option>
-                                    <option value="Mexico">Mexico</option>
-                                    <option value="United Kingdom">United Kingdom</option>
-                                    <option value="Australia">Australia</option>
-                                    <option value="Germany">Germany</option>
-                                    <option value="France">France</option>
-                                    <option value="Japan">Japan</option>
-                                    <option value="China">China</option>
-                                    <option value="India">India</option>
-                                </select>
-                                <span asp-validation-for="ShippingDetails.ShippingCountry" class="text-danger"></span>
-                            </div>
+                                <div class="col-md-6">
+                                    <label asp-for="BillingDetails.Email" class="form-label">Email*</label>
+                                    <input type="email" class="form-control" asp-for="BillingDetails.Email" required>
+                                    <div class="invalid-feedback">
+                                        Please enter a valid email address.
+                                    </div>
+                                    <span asp-validation-for="BillingDetails.Email" class="text-danger"></span>
+                                </div>
 
-                            <div class="col-md-4">
-                                <label asp-for="ShippingDetails.ShippingCity" class="form-label">City</label>
-                                <input type="text" class="form-control" asp-for="ShippingDetails.ShippingCity">
-                                <span asp-validation-for="ShippingDetails.ShippingCity" class="text-danger"></span>
-                            </div>
-
-                            <div class="col-md-3">
-                                <label asp-for="ShippingDetails.ShippingPostalCode" class="form-label">Postal Code</label>
-                                <input type="text" class="form-control" asp-for="ShippingDetails.ShippingPostalCode">
-                                <span asp-validation-for="ShippingDetails.ShippingPostalCode" class="text-danger"></span>
+                                <div class="col-md-6">
+                                    <label asp-for="BillingDetails.Phone" class="form-label">Phone*</label>
+                                    <input type="tel" class="form-control" asp-for="BillingDetails.Phone" required
+    
+                                           placeholder="123-456-7890 or 1234567890">
+                                    <div class="invalid-feedback">
+                                        Please enter a valid phone number.
+                                    </div>
+                                    <span asp-validation-for="BillingDetails.Phone" class="text-danger"></span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Payment Section -->
-                    <div class="col-12 mt-4">
-                        <hr>
-                        <h5>Payment Information</h5>
-                    </div>
-
-                    <div class="col-12">
-                        <label class="form-label">Payment Method</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="SelectedPaymentMethod" id="creditCard"
-                                   value="@PaymentMethod.CreditCard" checked asp-for="SelectedPaymentMethod">
-                            <label class="form-check-label" for="creditCard">
-                                Credit Card
-                            </label>
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="bi bi-house-fill me-2"></i>Billing Address</h5>
                         </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="SelectedPaymentMethod" id="paypal"
-                                   value="@PaymentMethod.PayPal" asp-for="SelectedPaymentMethod">
-                            <label class="form-check-label" for="paypal">
-                                PayPal
-                            </label>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label asp-for="BillingDetails.Address" class="form-label">Street Address*</label>
+                                    <input type="text" class="form-control" asp-for="BillingDetails.Address" required>
+                                    <div class="invalid-feedback">
+                                        Please enter your street address.
+                                    </div>
+                                    <span asp-validation-for="BillingDetails.Address" class="text-danger"></span>
+                                </div>
+
+                                <div class="col-md-5">
+                                    <label asp-for="BillingDetails.Country" class="form-label">Country*</label>
+                                    <select class="form-select" id="billingCountry" asp-for="BillingDetails.Country" required>
+                                        <option value="">Select country...</option>
+                                        <option value="United States">United States</option>
+                                        <option value="Canada">Canada</option>
+                                        <option value="Mexico">Mexico</option>
+                                        <option value="United Kingdom">United Kingdom</option>
+                                        <option value="Australia">Australia</option>
+                                        <option value="Germany">Germany</option>
+                                        <option value="France">France</option>
+                                        <option value="Japan">Japan</option>
+                                        <option value="China">China</option>
+                                        <option value="Bangladesh">Bangladesh</option>
+                                    </select>
+                                    <div class="invalid-feedback">
+                                        Please select a country.
+                                    </div>
+                                    <span asp-validation-for="BillingDetails.Country" class="text-danger"></span>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label asp-for="BillingDetails.City" class="form-label">City*</label>
+                                    <input type="text" class="form-control" asp-for="BillingDetails.City" required>
+                                    <div class="invalid-feedback">
+                                        Please enter your city.
+                                    </div>
+                                    <span asp-validation-for="BillingDetails.City" class="text-danger"></span>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label asp-for="BillingDetails.PostalCode" class="form-label">Postal Code*</label>
+                                    <input type="text" class="form-control" asp-for="BillingDetails.PostalCode" required>
+                                    <div class="invalid-feedback">
+                                        Please enter your postal code.
+                                    </div>
+                                    <span asp-validation-for="BillingDetails.PostalCode" class="text-danger"></span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="SelectedPaymentMethod" id="bankTransfer"
-                                   value="@PaymentMethod.BankTransfer" asp-for="SelectedPaymentMethod">
-                            <label class="form-check-label" for="bankTransfer">
-                                Bank Transfer
-                            </label>
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-primary" id="toShippingBtn">Continue to Shipping <i class="bi bi-arrow-right ms-2"></i></button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Shipping Information -->
+                <div id="shippingSection" class="checkout-section">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="bi bi-truck me-2"></i>Shipping Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-check mb-4">
+                                <input type="checkbox" class="form-check-input" id="sameAsBilling" asp-for="SameAsShipping" checked>
+                                <label class="form-check-label" for="sameAsBilling">Same as billing address</label>
+                            </div>
+
+                            <div id="shippingFields" style="display: none;">
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label asp-for="ShippingDetails.ShippingAddress" class="form-label">Street Address*</label>
+                                        <input type="text" class="form-control" asp-for="ShippingDetails.ShippingAddress">
+                                        <div class="invalid-feedback">
+                                            Please enter your shipping address.
+                                        </div>
+                                        <span asp-validation-for="ShippingDetails.ShippingAddress" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="col-md-5">
+                                        <label asp-for="ShippingDetails.ShippingCountry" class="form-label">Country*</label>
+                                        <select class="form-select" id="shippingCountry" asp-for="ShippingDetails.ShippingCountry">
+                                            <option value="">Select country...</option>
+                                            <option value="United States">United States</option>
+                                            <option value="Canada">Canada</option>
+                                            <option value="Mexico">Mexico</option>
+                                            <option value="United Kingdom">United Kingdom</option>
+                                            <option value="Australia">Australia</option>
+                                            <option value="Germany">Germany</option>
+                                            <option value="France">France</option>
+                                            <option value="Japan">Japan</option>
+                                            <option value="China">China</option>
+                                            <option value="India">India</option>
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Please select a country.
+                                        </div>
+                                        <span asp-validation-for="ShippingDetails.ShippingCountry" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label asp-for="ShippingDetails.ShippingCity" class="form-label">City*</label>
+                                        <input type="text" class="form-control" asp-for="ShippingDetails.ShippingCity">
+                                        <div class="invalid-feedback">
+                                            Please enter your city.
+                                        </div>
+                                        <span asp-validation-for="ShippingDetails.ShippingCity" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label asp-for="ShippingDetails.ShippingPostalCode" class="form-label">Postal Code*</label>
+                                        <input type="text" class="form-control" asp-for="ShippingDetails.ShippingPostalCode">
+                                        <div class="invalid-feedback">
+                                            Please enter your postal code.
+                                        </div>
+                                        <span asp-validation-for="ShippingDetails.ShippingPostalCode" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Shipping Methods -->
+                            <div class="mt-4">
+                                <h6 class="mb-3">Shipping Method</h6>
+                                <div class="form-check mb-2 p-2 border rounded">
+                                    <input class="form-check-input" type="radio" name="ShippingMethod" id="standardShipping" value="standard" checked>
+                                    <label class="form-check-label d-flex justify-content-between w-100" for="standardShipping">
+                                        <div>
+                                            <strong>Standard Shipping</strong>
+                                            <p class="text-muted small mb-0">3-5 business days</p>
+                                        </div>
+                                        <span>$@(Math.Round(Model.ShippingCost, 2))</span>
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2 p-2 border rounded">
+                                    <input class="form-check-input" type="radio" name="ShippingMethod" id="expressShipping" value="express">
+                                    <label class="form-check-label d-flex justify-content-between w-100" for="expressShipping">
+                                        <div>
+                                            <strong>Express Shipping</strong>
+                                            <p class="text-muted small mb-0">1-2 business days</p>
+                                        </div>
+                                        <span>$@(Math.Round(Model.ShippingCost * (decimal)1.5, 2))</span>
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Order Notes -->
-                    <div class="col-12 mt-4">
-                        <hr>
-                        <h5>Additional Information</h5>
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary" id="toCustomerBtn"><i class="bi bi-arrow-left me-2"></i> Back</button>
+                        <button type="button" class="btn btn-primary" id="toPaymentBtn">Continue to Payment <i class="bi bi-arrow-right ms-2"></i></button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Payment Information -->
+                <div id="paymentSection" class="checkout-section">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="bi bi-credit-card me-2"></i>Payment Method</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="payment-options mb-4">
+                                <div class="form-check payment-option mb-3 p-3 border rounded">
+                                    <input class="form-check-input" type="radio" name="SelectedPaymentMethod" id="creditCard"
+                                        value="@PaymentMethod.CreditCard" checked asp-for="SelectedPaymentMethod">
+                                    <label class="form-check-label w-100" for="creditCard">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span><strong>Credit Card</strong></span>
+                                            <div>
+                                                <i class="bi bi-credit-card me-1"></i>
+                                                <i class="bi bi-credit-card-2-front me-1"></i>
+                                                <i class="bi bi-credit-card-2-back"></i>
+                                            </div>
+                                        </div>
+                                    </label>
+                                    <div id="creditCardFields" class="mt-3">
+                                        <div class="row g-3">
+                                            <div class="col-12">
+                                                <label for="ccName" class="form-label">Name on card*</label>
+                                                <input type="text" class="form-control" id="ccName" name="CCName" placeholder="Full name as displayed on card">
+                                                <div class="invalid-feedback">
+                                                    Name on card is required
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-12">
+                                                <label for="ccNumber" class="form-label">Card number*</label>
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control" id="ccNumber" name="CCNumber" placeholder="1234 5678 9012 3456">
+                                                    <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                                                </div>
+                                                <div class="invalid-feedback">
+                                                    Credit card number is required
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-4">
+                                                <label for="ccExpMonth" class="form-label">Expiration Month*</label>
+                                                <select class="form-select" id="ccExpMonth" name="CCExpMonth">
+                                                    <option value="">Month</option>
+                                                    <option value="01">01 - January</option>
+                                                    <option value="02">02 - February</option>
+                                                    <option value="03">03 - March</option>
+                                                    <option value="04">04 - April</option>
+                                                    <option value="05">05 - May</option>
+                                                    <option value="06">06 - June</option>
+                                                    <option value="07">07 - July</option>
+                                                    <option value="08">08 - August</option>
+                                                    <option value="09">09 - September</option>
+                                                    <option value="10">10 - October</option>
+                                                    <option value="11">11 - November</option>
+                                                    <option value="12">12 - December</option>
+                                                </select>
+                                                <div class="invalid-feedback">
+                                                    Expiration month required
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-4">
+                                                <label for="ccExpYear" class="form-label">Expiration Year*</label>
+                                                <select class="form-select" id="ccExpYear" name="CCExpYear">
+                                                    <option value="">Year</option>
+                                                    @for (int i = DateTime.Now.Year; i < DateTime.Now.Year + 10; i++)
+                                                    {
+                                                        <option value="@i">@i</option>
+                                                    }
+                                                </select>
+                                                <div class="invalid-feedback">
+                                                    Expiration year required
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-4">
+                                                <label for="ccCvv" class="form-label">CVV*</label>
+                                                <input type="text" class="form-control" id="ccCvv" name="CCCVV" placeholder="123">
+                                                <div class="invalid-feedback">
+                                                    Security code required
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-check payment-option mb-3 p-3 border rounded">
+                                    <input class="form-check-input" type="radio" name="SelectedPaymentMethod" id="paypal"
+                                        value="@PaymentMethod.PayPal" asp-for="SelectedPaymentMethod">
+                                    <label class="form-check-label w-100" for="paypal">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span><strong>PayPal</strong></span>
+                                            <i class="bi bi-paypal fs-5"></i>
+                                        </div>
+                                        <p class="text-muted small mb-0">You will be redirected to PayPal to complete your purchase securely.</p>
+                                    </label>
+                                </div>
+
+                                <div class="form-check payment-option mb-3 p-3 border rounded">
+                                    <input class="form-check-input" type="radio" name="SelectedPaymentMethod" id="bankTransfer"
+                                        value="@PaymentMethod.BankTransfer" asp-for="SelectedPaymentMethod">
+                                    <label class="form-check-label w-100" for="bankTransfer">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span><strong>Bank Transfer</strong></span>
+                                            <i class="bi bi-bank fs-5"></i>
+                                        </div>
+                                        <p class="text-muted small mb-0">Make your payment directly into our bank account. Please use your Order ID as the payment reference.</p>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="col-12">
-                        <label asp-for="OrderNotes" class="form-label">Order Notes (Optional)</label>
-                        <textarea class="form-control" asp-for="OrderNotes" rows="3"
-                                  placeholder="Notes about your order, e.g. special delivery instructions"></textarea>
+                    <!-- Additional Information -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Additional Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-floating">
+                                <textarea class="form-control" asp-for="OrderNotes" id="orderNotes" style="height: 100px"></textarea>
+                                <label for="orderNotes">Order Notes (Optional)</label>
+                            </div>
+                            <div class="form-text">Notes about your order, e.g. special delivery instructions</div>
+                        </div>
                     </div>
 
-                    <!-- Submit Button -->
-                    <div class="col-12 mt-4">
-                        <hr>
-                        <button class="btn btn-primary btn-lg w-100" type="submit">Place Order</button>
+                    <!-- Terms and Conditions -->
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="termsAccepted" required>
+                        <label class="form-check-label" for="termsAccepted">
+                            I have read and agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a>*
+                        </label>
+                        <div class="invalid-feedback">
+                            You must agree to the terms and conditions
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary" id="toShippingBackBtn"><i class="bi bi-arrow-left me-2"></i> Back</button>
+                        <button type="submit" class="btn btn-primary btn-lg" id="placeOrderBtn">
+                            <i class="bi bi-lock-fill me-2"></i>Place Order
+                        </button>
                     </div>
                 </div>
             </form>
@@ -225,47 +465,345 @@
     </div>
 </div>
 
+<!-- Terms and Conditions Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="termsModalLabel">Terms and Conditions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Last updated: May 2025</p>
+
+                <h5>1. Introduction</h5>
+                <p>These Terms and Conditions govern your purchase from our online store. By placing an order, you agree to be bound by these terms.</p>
+                
+                <h5>2. Orders</h5>
+                <p>When you place an order, you offer to purchase the products at the prices indicated. We reserve the right to accept or decline your order.</p>
+                
+                <h5>3. Pricing and Payment</h5>
+                <p>All prices are displayed in USD and include applicable taxes. Payment is required at the time of placing your order.</p>
+                
+                <h5>4. Shipping and Delivery</h5>
+                <p>Shipping costs and estimated delivery times are provided during checkout. We are not responsible for delays due to customs or postal service issues.</p>
+                
+                <h5>5. Returns and Refunds</h5>
+                <p>You may return products within 30 days of delivery. Items must be unused and in original packaging. Please contact customer service to initiate a return.</p>
+                
+                <h5>6. Privacy Policy</h5>
+                <p>Our Privacy Policy governs the processing of personal data provided to us. By placing an order, you consent to such processing.</p>
+                
+                <h5>7. Governing Law</h5>
+                <p>These Terms and Conditions are governed by the laws of the jurisdiction where our company is registered.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">I Understand</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        /* Custom Checkout Styles */
+        .checkout-section {
+            display: none;
+        }
+        
+        .checkout-section.active {
+            display: block;
+        }
+        
+        .checkout-progress .step {
+            color: #6c757d;
+            font-weight: 500;
+            position: relative;
+        }
+        
+        .checkout-progress .step.active {
+            color: #0d6efd;
+            font-weight: 600;
+        }
+        
+        .checkout-progress .step::before {
+            content: "";
+            display: block;
+            width: 20px;
+            height: 20px;
+            background-color: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 50%;
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+        }
+        
+        .checkout-progress .step.active::before {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+        
+        .payment-option label {
+            cursor: pointer;
+        }
+        
+        .payment-option:has(input:checked) {
+            border-color: #0d6efd !important;
+            background-color: rgba(13, 110, 253, 0.05);
+        }
+    </style>
+}
+
 @section Scripts {
     <script>
-        // Function to toggle shipping fields visibility
-        function toggleShippingFields(isSameAsBilling) {
-            const shippingFields = document.getElementById('shippingFields');
-            if (isSameAsBilling) {
-                shippingFields.style.display = 'none';
-
-                // Reset shipping fields validation when hidden
-                const shippingInputs = shippingFields.querySelectorAll('input, select');
-                shippingInputs.forEach(input => {
-                    input.value = '';
-                    // Remove validation errors
-                    const validationSpan = document.querySelector(`[data-valmsg-for="${input.name}"]`);
-                    if (validationSpan) {
-                        validationSpan.textContent = '';
-                    }
-                });
-            } else {
-                shippingFields.style.display = 'block';
-            }
-        }
-
-        // Initialize the shipping fields visibility based on checkbox state
         document.addEventListener('DOMContentLoaded', function() {
+            // Form validation
+            const form = document.getElementById('checkoutForm');
             const sameAsBillingCheckbox = document.getElementById('sameAsBilling');
-            toggleShippingFields(sameAsBillingCheckbox.checked);
+            const billingCountry = document.getElementById('billingCountry');
+            const shippingCountry = document.getElementById('shippingCountry');
+            const shippingFields = document.getElementById('shippingFields');
+            const creditCardRadio = document.getElementById('creditCard');
+            const paypalRadio = document.getElementById('paypal');
+            const bankTransferRadio = document.getElementById('bankTransfer');
+            const creditCardFields = document.getElementById('creditCardFields');
+            
+            // Progress steps
+            const customerInfoSection = document.getElementById('customerInfoSection');
+            const shippingSection = document.getElementById('shippingSection');
+            const paymentSection = document.getElementById('paymentSection');
+            const step1 = document.getElementById('step1');
+            const step2 = document.getElementById('step2');
+            const step3 = document.getElementById('step3');
+            const progressBar = document.getElementById('checkoutProgressBar');
+            
+            // Navigation buttons
+            const toShippingBtn = document.getElementById('toShippingBtn');
+            const toCustomerBtn = document.getElementById('toCustomerBtn');
+            const toPaymentBtn = document.getElementById('toPaymentBtn');
+            const toShippingBackBtn = document.getElementById('toShippingBackBtn');
+            const placeOrderBtn = document.getElementById('placeOrderBtn');
 
-            // Copy billing address to shipping when user changes billing info and checkbox is checked
-            const billingInputs = document.querySelectorAll('[name^="BillingDetails."]');
-            billingInputs.forEach(input => {
-                input.addEventListener('change', function() {
-                    if (sameAsBillingCheckbox.checked) {
-                        const fieldName = input.name.replace('BillingDetails.', '');
-                        const shippingField = document.querySelector(`[name="ShippingDetails.Shipping${fieldName}"]`);
-                        if (shippingField) {
-                            shippingField.value = input.value;
+            // Step navigation functions
+            function showCustomerInfoSection() {
+                customerInfoSection.classList.add('active');
+                shippingSection.classList.remove('active');
+                paymentSection.classList.remove('active');
+                step1.classList.add('active');
+                step2.classList.remove('active');
+                step3.classList.remove('active');
+                progressBar.style.width = '33%';
+                progressBar.setAttribute('aria-valuenow', '33');
+            }
+            
+            function showShippingSection() {
+                customerInfoSection.classList.remove('active');
+                shippingSection.classList.add('active');
+                paymentSection.classList.remove('active');
+                step1.classList.add('active');
+                step2.classList.add('active');
+                step3.classList.remove('active');
+                progressBar.style.width = '66%';
+                progressBar.setAttribute('aria-valuenow', '66');
+            }
+            
+            function showPaymentSection() {
+                customerInfoSection.classList.remove('active');
+                shippingSection.classList.remove('active');
+                paymentSection.classList.add('active');
+                step1.classList.add('active');
+                step2.classList.add('active');
+                step3.classList.add('active');
+                progressBar.style.width = '100%';
+                progressBar.setAttribute('aria-valuenow', '100');
+            }
+            
+            // Navigation event listeners
+            toShippingBtn.addEventListener('click', function() {
+                if (validateCustomerInfoSection()) {
+                    showShippingSection();
+                }
+            });
+            
+            toCustomerBtn.addEventListener('click', function() {
+                showCustomerInfoSection();
+            });
+            
+            toPaymentBtn.addEventListener('click', function() {
+                if (validateShippingSection()) {
+                    showPaymentSection();
+                }
+            });
+            
+            toShippingBackBtn.addEventListener('click', function() {
+                showShippingSection();
+            });
+            
+            // Form validation functions
+            function validateCustomerInfoSection() {
+                const requiredFields = customerInfoSection.querySelectorAll('input[required], select[required]');
+                let isValid = true;
+                
+                requiredFields.forEach(field => {
+                    if (!field.value.trim()) {
+                        field.classList.add('is-invalid');
+                        isValid = false;
+                    } else {
+                        field.classList.remove('is-invalid');
+                    }
+                    
+              
+                });
+                
+                return isValid;
+            }
+            
+            function validateShippingSection() {
+                if (!sameAsBillingCheckbox.checked) {
+                    const requiredFields = shippingFields.querySelectorAll('input, select');
+                    let isValid = true;
+                    
+                    requiredFields.forEach(field => {
+                        if (!field.value.trim()) {
+                            field.classList.add('is-invalid');
+                            isValid = false;
+                        } else {
+                            field.classList.remove('is-invalid');
                         }
+                    });
+                    
+                    return isValid;
+                }
+                
+                return true;
+            }
+            
+            // Handle "Same as billing" checkbox
+            function toggleShippingFields(isSameAsBilling) {
+                if (isSameAsBilling) {
+
+                    shippingFields.style.display = 'none';
+                    
+                    // Clear and reset shipping fields validation
+                    const shippingInputs = shippingFields.querySelectorAll('input, select');
+                    shippingInputs.forEach(input => {
+                        input.value = '';
+                        input.classList.remove('is-invalid');
+                    });
+                } else {
+                    shippingFields.style.display = 'block';
+                    
+                    // Copy billing info to shipping fields if they're empty
+                    if (billingCountry.value) {
+                        document.querySelector('[name="ShippingDetails.ShippingAddress"]').value = document.querySelector('[name="BillingDetails.Address"]').value;
+                        document.querySelector('[name="ShippingDetails.ShippingCity"]').value = document.querySelector('[name="BillingDetails.City"]').value;
+                        document.querySelector('[name="ShippingDetails.ShippingPostalCode"]').value = document.querySelector('[name="BillingDetails.PostalCode"]').value;
+                        shippingCountry.value = billingCountry.value;
+                    }
+                }
+            }
+            
+            sameAsBillingCheckbox.addEventListener('change', function() {
+                toggleShippingFields(this.checked);
+            });
+            
+            // Initialize shipping fields based on checkbox state
+            toggleShippingFields(sameAsBillingCheckbox.checked);
+            
+            // Payment method toggle
+            function togglePaymentFields() {
+                if (creditCardRadio.checked) {
+                    creditCardFields.style.display = 'block';
+                } else {
+                    creditCardFields.style.display = 'none';
+                }
+            }
+            
+            creditCardRadio.addEventListener('change', togglePaymentFields);
+            paypalRadio.addEventListener('change', togglePaymentFields);
+            bankTransferRadio.addEventListener('change', togglePaymentFields);
+            
+            // Initialize payment fields
+            togglePaymentFields();
+            
+            // Form submission
+            form.addEventListener('submit', function(event) {
+                // Validate all required fields
+                const allRequiredFields = form.querySelectorAll('input[required], select[required], textarea[required]');
+                let formIsValid = true;
+                
+                allRequiredFields.forEach(field => {
+                    if (!field.value.trim()) {
+                        field.classList.add('is-invalid');
+                        formIsValid = false;
+                    } else {
+                        field.classList.remove('is-invalid');
                     }
                 });
+                
+                // Check terms checkbox
+                const termsCheckbox = document.getElementById('termsAccepted');
+                if (!termsCheckbox.checked) {
+                    termsCheckbox.classList.add('is-invalid');
+                    formIsValid = false;
+                } else {
+                    termsCheckbox.classList.remove('is-invalid');
+                }
+                
+                if (!formIsValid) {
+                    event.preventDefault();
+                    showPaymentSection(); // Ensure we're on the payment section to show validation errors
+                }
             });
+            
+            // Credit card formatting
+            const ccNumberInput = document.getElementById('ccNumber');
+            ccNumberInput.addEventListener('input', function(e) {
+                let value = e.target.value;
+                
+                // Remove all non-digits
+                value = value.replace(/\D/g, '');
+                
+                // Add space after every 4 digits
+                value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+                
+                // Limit to 19 characters (16 digits + 3 spaces)
+                value = value.substring(0, 19);
+                
+                e.target.value = value;
+            });
+            
+            // CVV formatting - only allow numbers and limit to 3-4 digits
+            const cvvInput = document.getElementById('ccCvv');
+            cvvInput.addEventListener('input', function(e) {
+                let value = e.target.value;
+                value = value.replace(/\D/g, '').substring(0, 4);
+                e.target.value = value;
+            });
+            
+            // Phone formatting
+            const phoneInput = document.querySelector('[name="BillingDetails.Phone"]');
+            phoneInput.addEventListener('input', function(e) {
+                let value = e.target.value;
+                value = value.replace(/\D/g, '');
+                
+                if (value.length > 10) {
+                    value = value.substring(0, 10);
+                }
+                
+                // Format as XXX-XXX-XXXX if 10 digits are entered
+                if (value.length >= 10) {
+                    value = value.substring(0, 3) + '-' + value.substring(3, 6) + '-' + value.substring(6, 10);
+                }
+                
+                e.target.value = value;
+            });
+            
+            // Initialize the checkout process
+            showCustomerInfoSection();
         });
     </script>
 }

@@ -25,6 +25,7 @@ public class CartItem
 
     public string? ProductImageUrl { get; set; }
 
+    // Dynamically calculate total for the item
     public decimal Total => Quantity * Price;
 }
 
@@ -118,12 +119,16 @@ public class CheckoutViewModel
 
     public bool SameAsShipping { get; set; } = true;
 
+    // Dynamically calculate subtotal
     public decimal Subtotal => CartItems.Sum(item => item.Total);
 
-    public decimal Tax => Subtotal * 0.0m; // Set tax rate if applicable
+    // Dynamically calculate tax (e.g., 10% tax rate)
+    public decimal Tax => Subtotal * 0.1m;
 
-    public decimal ShippingCost => 0.0m; // Set shipping cost calculation if applicable
+    // Dynamically calculate shipping cost (e.g., flat rate)
+    public decimal ShippingCost => CartItems.Any() ? 5.00m : 0.00m;
 
+    // Dynamically calculate total
     public decimal Total => Subtotal + Tax + ShippingCost;
 
     public string OrderNumber { get; set; } = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper();

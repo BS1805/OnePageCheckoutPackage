@@ -1,45 +1,57 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
+using OnePageCheckoutPackage;
+using OnePageCheckoutPackage.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using System.Threading.Tasks;
 
-namespace OnePageCheckoutPackage
+var builder = WebApplication.CreateBuilder(args);
+
+// Add Razor Pages for your project.
+builder.Services.AddRazorPages();
+
+// Add the OnePageCheckout package services.
+builder.Services.AddOnePageCheckout(builder.Configuration);
+
+// Bind CheckoutConfig to the "OnePageCheckout" section in appsettings.json and register it.
+builder.Services.Configure<CheckoutConfig>(builder.Configuration.GetSection("OnePageCheckout"));
+builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<CheckoutConfig>>().Value);
+
+// Enable session support.
+builder.Services.AddSession();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
 {
-    public static class OnePageCheckoutPackageExtensions
-    {
-        // Method to register services required by the package
-        public static IServiceCollection AddOnePageCheckout(this IServiceCollection services, IConfiguration configuration)
-        {
-            // Add Razor Pages and MVC services
-            services.AddControllersWithViews();
-
-            // Add any additional services or configurations required by the package
-            // Example: services.AddSingleton<IMyService, MyService>();
-
-            return services;
-        }
-
-        // Method to configure middleware required by the package
-        public static void UseOnePageCheckout(this IApplicationBuilder app)
-        {
-            app.UseStaticFiles();
-            app.UseRouting();
-            app.UseAuthorization();
-
-            app.UseEndpoints(endpoints =>
-            {
-                // Map routes for the package
-                endpoints.MapControllerRoute(
-                    name: "checkout",
-                    pattern: "checkout/{action=Index}/{id?}",
-                    defaults: new { controller = "Checkout" });
-
-                // Remove the default route pointing to HomeController
-                endpoints.MapControllerRoute(
-                    name: "default",
-                    pattern: "{controller=Checkout}/{action=Index}/{id?}");
-            });
-        }
-
-
-    }
+    app.UseExceptionHandler("/Error");
+    app.UseHsts();
 }
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
+
+// Enable session middleware.
+app.UseSession();
+
+app.UseAuthorization();
+
+// Top-level route registrations
+app.MapControllerRoute(
+    name: "checkout",
+    pattern: "checkout/{action=Index}/{id?}",
+    defaults: new { controller = "Checkout" });
+
+app.MapGet("/", context =>
+{
+    context.Response.Redirect("/checkout");
+    return Task.CompletedTask;
+});
+
+app.MapRazorPages();
+
+app.Run();
