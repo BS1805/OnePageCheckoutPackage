@@ -251,7 +251,7 @@
                                             <option value="France">France</option>
                                             <option value="Japan">Japan</option>
                                             <option value="China">China</option>
-                                            <option value="India">India</option>
+                                            <option value="Bangladesh">Bangladesh</option>
                                         </select>
                                         <div class="invalid-feedback">
                                             Please select a country.
@@ -952,7 +952,20 @@
             // Form submission
     form.addEventListener('submit', function(event) {
         event.preventDefault(); // Always prevent default first to validate
-        
+                   if (sameAsBillingCheckbox.checked) {
+                document.querySelector('[name="ShippingDetails.ShippingAddress"]').value =
+                    document.querySelector('[name="BillingDetails.Address"]').value;
+
+                document.querySelector('[name="ShippingDetails.ShippingCity"]').value =
+                    document.querySelector('[name="BillingDetails.City"]').value;
+
+                document.querySelector('[name="ShippingDetails.ShippingPostalCode"]').value =
+                    document.querySelector('[name="BillingDetails.PostalCode"]').value;
+
+                document.querySelector('[name="ShippingDetails.ShippingCountry"]').value =
+                    document.querySelector('[name="BillingDetails.Country"]').value;
+            }
+
         // Validate all required fields
         const allRequiredFields = form.querySelectorAll('input[required], select[required], textarea[required]');
         let formIsValid = true;
