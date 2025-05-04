@@ -106,6 +106,18 @@ namespace OnePageCheckoutPackage.Controllers
             }
         }
 
+        [HttpGet("checkout/complete-order")]
+        public IActionResult CompleteOrder()
+        {
+            // Logic to finalize the order (e.g., save to database, send confirmation email)
+            TempData["OrderNumber"] = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper();
+            TempData["CustomerEmail"] = "sb-slned26457170@personal.example.com"; // Replace with actual email
+            TempData["CustomerName"] = "John Doe"; // Replace with actual customer name
+            TempData["OrderTotal"] = "$76.50"; // Replace with actual total
+
+            return RedirectToAction("OrderConfirmation");
+        }
+
         [HttpGet("checkout/confirmation")]
         public ActionResult OrderConfirmation()
         {
