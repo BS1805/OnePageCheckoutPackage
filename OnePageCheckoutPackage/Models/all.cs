@@ -10,6 +10,8 @@ namespace OnePageCheckoutPackage.Models;
 
 public class CartItem
 {
+    [Key] // Add this attribute to define the primary key
+    public int Id { get; set; }
     [Required]
     public string ProductName { get; set; } = string.Empty;
 
@@ -30,8 +32,12 @@ public class CartItem
 }
 
 
+
 public class BillingDetails
 {
+    [Key] // Add this attribute to define the primary key
+    public int Id { get; set; } // Primary key
+
     [Required(ErrorMessage = "First name is required")]
     [Display(Name = "First Name")]
     public string FirstName { get; set; } = string.Empty;
@@ -62,9 +68,11 @@ public class BillingDetails
     public string Country { get; set; } = string.Empty;
 }
 
-
 public class ShippingDetails
 {
+    [Key] // Add this attribute to define the primary key
+    public int Id { get; set; } // Primary key
+
     [Required(ErrorMessage = "Shipping address is required")]
     [Display(Name = "Address")]
     public string ShippingAddress { get; set; } = string.Empty;
@@ -83,11 +91,28 @@ public class ShippingDetails
 
 
 
+
 public enum PaymentMethod
 {
     CreditCard,
     PayPal,
     BankTransfer
+}
+
+public class Order
+{
+    [Key]
+    public int Id { get; set; }
+    public string OrderNumber { get; set; } = string.Empty;
+    public string CustomerName { get; set; } = string.Empty;
+    public string CustomerEmail { get; set; } = string.Empty;
+    public string PaymentMethod { get; set; } = string.Empty;
+    public decimal TotalAmount { get; set; }
+    public DateTime OrderDate { get; set; } = DateTime.UtcNow;
+
+    public BillingDetails BillingDetails { get; set; } = new();
+    public ShippingDetails ShippingDetails { get; set; } = new();
+    public List<CartItem> CartItems { get; set; } = new();
 }
 
 

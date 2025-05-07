@@ -1,9 +1,12 @@
-﻿// Configuration/CheckoutConfig.cs
-namespace OnePageCheckoutPackage.Configuration;
-// Configuration/ServiceExtensions.cs
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OnePageCheckoutPackage.Models;
 using OnePageCheckoutPackage.Services;
+using Microsoft.EntityFrameworkCore;
+using System;
+
+namespace OnePageCheckoutPackage.Configuration;
+
 
 
 public class CheckoutConfig
@@ -31,7 +34,7 @@ public class TelegramSettings
 
 public static class ServiceExtensions
 {
-    public static IServiceCollection AddOnePageCheckout(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddOnePageCheckout(this IServiceCollection services, IConfiguration configuration, Action<DbContextOptionsBuilder> dbContextOptions)
     {
         // Register configuration
         var checkoutConfig = new CheckoutConfig();
@@ -41,6 +44,9 @@ public static class ServiceExtensions
         // Register services
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<INotificationService, TelegramNotificationService>();
+
+        // Add EF Core with client-provided options
+        services.AddDbContext<CheckoutDbContext>(dbContextOptions);
 
         // Add controllers from this assembly
         services.AddControllersWithViews()
