@@ -79,28 +79,6 @@ public class EmailService : IEmailService
     }
 
 
-    private string BuildPlainTextEmail(CheckoutViewModel model)
-    {
-        var text = $"Thank you for your order #{model.OrderNumber}!\n\n";
-        text += "Order Details:\n";
-        text += $"Customer: {model.BillingDetails.FirstName} {model.BillingDetails.LastName}\n";
-        text += $"Email: {model.BillingDetails.Email}\n";
-        text += $"Shipping Address: {model.ShippingDetails.ShippingAddress}, {model.ShippingDetails.ShippingCity}, {model.ShippingDetails.ShippingPostalCode}\n\n";
-        text += "Items:\n";
-
-        foreach (var item in model.CartItems)
-        {
-            text += $"- {item.ProductName} - Qty: {item.Quantity} - Price: {item.Price:C} - Total: {item.Total:C}\n";
-        }
-
-        text += $"\nSubtotal: {model.Subtotal:C}\n";
-        if (model.Tax > 0) text += $"Tax: {model.Tax:C}\n";
-        if (model.ShippingCost > 0) text += $"Shipping: {model.ShippingCost:C}\n";
-        text += $"Total: {model.Total:C}\n\n";
-        text += "Thank you for shopping with us!";
-
-        return text;
-    }
 
     private string BuildHtmlEmail(CheckoutViewModel model)
     {

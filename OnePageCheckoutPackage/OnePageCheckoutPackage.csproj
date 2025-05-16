@@ -8,7 +8,7 @@
 
     <!-- Package Metadata -->
     <PackageId>OnePageCheckoutPackage</PackageId>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
     <Authors>Your Name</Authors>
     <Company>Your Organization</Company>
     <Description>A comprehensive one-page checkout solution for ASP.NET Core Razor Pages applications</Description>
